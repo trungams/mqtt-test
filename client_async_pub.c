@@ -74,12 +74,13 @@ int main (void) {
         MQTTClient_publishMessage(client, TOPIC, &pub_msg, &token);
         while (delivered_token != token);
     }
+    while (!finished);
+
     clock_gettime(CLOCK_REALTIME, end);
     timespec_difference(result, begin, end);
 
     print_result(result);
 
-    while (!finished);
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
     return rc;

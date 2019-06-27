@@ -22,6 +22,7 @@ int started = 0;
 int finished = 0;
 
 void delivered (void *context, MQTTAsync_token dt) {
+    delivered_token = dt;
     message_count++;
     if (message_count == BENCHMARK_ITERATIONS) finished = 1;
 }
@@ -29,7 +30,6 @@ void delivered (void *context, MQTTAsync_token dt) {
 void message_arrived (void *context, MQTTAsync_successData *response) {
     MQTTAsync_message *message = (MQTTAsync_message*)context;
     MQTTAsync_freeMessage(&message);
-    delivered_token = response->token;
 }
 
 void connection_lost (void *context, char *cause) {
@@ -87,12 +87,12 @@ int main (void) {
         MQTTAsync_sendMessage(client, TOPIC, &pub_msg, &opts);
         while (delivered_token == 0);
     }
+    while (!finished);
+
     clock_gettime(CLOCK_REALTIME, end);
     timespec_difference(result, begin, end);
 
     print_result(result);
-
-    while (!finished);
 
     MQTTAsync_disconnect(client, NULL);
     MQTTAsync_destroy(&client);
