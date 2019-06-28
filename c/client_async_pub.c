@@ -20,15 +20,13 @@ volatile MQTTClient_deliveryToken delivered_token;
 unsigned long long message_count = 0;
 int finished = 0;
 
-void delivered (void *context, MQTTClient_deliveryToken dt) {
+void on_message_delivery (void *context, MQTTClient_deliveryToken dt) {
     delivered_token = dt;
     message_count++;
     if (message_count == BENCHMARK_ITERATIONS) finished = 1;
 }
 
-int message_arrived (void *context, char *topic_name, int topic_len, MQTTClient_message *message) {
-    MQTTClient_freeMessage(&message);
-    MQTTClient_free(topic_name);
+int on_message_arrival (void *context, char *topic_name, int topic_length, MQTTClient_message *message) {
     return 1;
 }
 
@@ -56,7 +54,7 @@ int main (void) {
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
 
-    MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, delivered);
+    MQTTClient_setCallbacks(client, NULL, connection_lost, on_message_arrival, on_message_delivery);
 
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);

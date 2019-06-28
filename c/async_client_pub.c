@@ -21,13 +21,10 @@ unsigned long long message_count = 0;
 int started = 0;
 int finished = 0;
 
-void delivered (void *context, MQTTAsync_token dt) {
-    delivered_token = dt;
+void on_message_delivery (void *context, MQTTAsync_successData *response) {
+    delivered_token = response->token;
     message_count++;
     if (message_count == BENCHMARK_ITERATIONS) finished = 1;
-}
-
-void message_arrived (void *context, MQTTAsync_successData *response) {
     MQTTAsync_message *message = (MQTTAsync_message*)context;
     MQTTAsync_freeMessage(&message);
 }
@@ -62,7 +59,7 @@ int main (void) {
     conn_opts.onSuccess = on_connect;
 
     MQTTAsync_setCallbacks(client, NULL, connection_lost, NULL, NULL);
-    MQTTAsync_setDeliveryCompleteCallback(client, NULL, delivered);
+    // MQTTAsync_setDeliveryCompleteCallback(client, NULL, on_message_delivery);
 
     if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS) {
         printf("Failed to start connect, return code %d\n", rc);
@@ -81,10 +78,11 @@ int main (void) {
         pub_msg.retained = 0;
         delivered_token = 0;
 
-        opts.onSuccess = message_arrived;
+        opts.onSuccess = on_message_delivery;
         opts.context = &pub_msg;
 
         MQTTAsync_sendMessage(client, TOPIC, &pub_msg, &opts);
+        printf("New message sent to topic %s: %s\n", TOPIC, pub_msg.payload);
         while (delivered_token == 0);
     }
     while (!finished);

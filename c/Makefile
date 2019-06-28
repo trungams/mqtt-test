@@ -5,8 +5,8 @@ CC=gcc
 LIBS=-lpaho-mqtt3c -lpaho-mqtt3a -lpaho-mqtt3as
 CFLAGS=-g -Wall
 BENCHMARKER=benchmark.c
-SOURCE_SYNC=
-SOURCE_ASYNC=
+CLIENT=mqtt_client.c
+SERVER=mqtt_server.c
 
 BIN_DIR=./bin
 
@@ -21,5 +21,9 @@ sync: client_sync_pub.c client_async_pub.c client_async_sub.c $(BENCHMARKER)
 	$(CC) -o $(BIN_DIR)/client_async_pub $(CFLAGS) client_async_pub.c $(BENCHMARKER) $(LIBS)
 	$(CC) -o $(BIN_DIR)/client_async_sub $(CFLAGS) client_async_sub.c $(BENCHMARKER) $(LIBS)
 
+chat: $(CLIENT) $(SERVER)
+	$(CC) -o $(BIN_DIR)/client $(CFLAGS) $(CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/server $(CFLAGS) $(SERVER) $(BENCHMARKER) $(LIBS)
+
 clean:
-	rm $(BIN_DIR)/*
+	rm -rf $(BIN_DIR)/*
