@@ -3,7 +3,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <MQTTAsync.h>
+#include <math.h>
 #include "./benchmark.h"
+
 
 #define ADDRESS     "tcp://localhost:1883"
 #define CLIENTID    "MQTTServer"
@@ -24,12 +26,19 @@ void on_message_delivery (void *context, MQTTAsync_token dt) {
     // printf("message delivered with token %d\n", dt);
     delivered_token = dt;
     messages_out++;
+    // printf("Messages sent %llu\n", messages_out);
     if (messages_out >= BENCHMARK_ITERATIONS) finished = 1;
 }
 
 void send_message (MQTTAsync client) {
     MQTTAsync_message message = MQTTAsync_message_initializer;
     MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+
+    char str[10];
+    sprintf(str, "%llu", messages_out);
+
+    // message.payload = str;
+    // message.payloadlen = messages_out ? (int)((ceil(log10(messages_out))+1)*sizeof(char)) : 2;
 
     message.payload = PAYLOAD;
     message.payloadlen = strlen(PAYLOAD);
@@ -39,6 +48,7 @@ void send_message (MQTTAsync client) {
 
     opts.context = &message;
 
+    // printf("%s\n", (char*)message.payload);
     MQTTAsync_sendMessage(client, TOPIC_OUT, &message, &opts);
 }
 

@@ -2,7 +2,7 @@
 
 # Compiler
 CC=gcc
-LIBS=-lpaho-mqtt3c -lpaho-mqtt3a -lpaho-mqtt3as
+LIBS=-lpaho-mqtt3c -lpaho-mqtt3a -lpaho-mqtt3as -lm
 CFLAGS=-g -Wall
 BENCHMARKER=benchmark.c
 CLIENT=mqtt_client.c

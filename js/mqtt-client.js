@@ -36,7 +36,7 @@ client.on('end', function () {
     console.log('Total messages received: ' + messagesIn);
 })
 
-client.on('message', function (topic, message) {
+client.on('message', function (topic, message, packet) {
     if (topic == TOPIC_IN) {
         messagesIn++;
         if (messagesIn >= benchmarker.BENCHMARK_ITERATIONS) {
