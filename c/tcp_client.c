@@ -1,15 +1,19 @@
-#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <netdb.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include "./benchmark.h"
 
-#define PAYLOAD     "hello world\n"
+#define PAYLOAD     "hello server\n"
 #define PORT        12000
+#define MAX_BUF     100
 
 int main (void) {
-    int sockfd, connfd;
+    int sockfd, val;
+    char buf[MAX_BUF];
     struct sockaddr_in server_addr;
 
     struct timespec *begin, *end, *result;
@@ -25,7 +29,7 @@ int main (void) {
         printf("Socket successfully created\n");
     }
 
-    bzero(&server_addr, sizeof(server_addr));
+    memset(&server_addr, 0, sizeof(server_addr));
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -36,10 +40,16 @@ int main (void) {
         exit(EXIT_FAILURE);
     }
 
+    if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &val, sizeof(val))) {
+        printf("Cannot set TCP_NODELAY option for client socket\n");
+        exit(EXIT_FAILURE);
+    }
+
     clock_gettime(CLOCK_REALTIME, begin);
     for (unsigned long long i = 0; i < BENCHMARK_ITERATIONS; i++) {
         char *msg = PAYLOAD;
         send(sockfd, msg, strlen(msg), MSG_CONFIRM);
+        recv(sockfd, buf, sizeof(buf), 0);
     }
     clock_gettime(CLOCK_REALTIME, end);
 
