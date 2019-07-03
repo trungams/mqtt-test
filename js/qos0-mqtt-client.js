@@ -56,11 +56,10 @@ function publishUntilFinish () {
         messagesOut++;
         if (messagesOut >= benchmarker.BENCHMARK_ITERATIONS) {
             finished = true;
+            benchmarker.stopClock();
         } else {
             setTimeout(publishUntilFinish, 1);
         }
-    } else {
-        benchmarker.stopClock();
     }
 }
 

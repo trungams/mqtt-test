@@ -23,6 +23,7 @@ ull messages_in = 0, messages_out = 0;
 int started = 0, finished = 0, can_send = 0;
 
 void on_message_delivery (void *context, MQTTAsync_token dt) {
+    // if (messages_out >= BENCHMARK_ITERATIONS) finished = 1;
     #ifdef DEBUG
         // printf("OUT:\t%llu\t%d\n", messages_out, dt);
     #endif
@@ -39,7 +40,7 @@ int on_message_arrival (void *context, char *topic_name, int topic_length, MQTTA
         #ifdef DEBUG
             printf("OUT: %llu\tIN: %llu\n", messages_out, messages_in);
             // printf("IN:\t%llu\n", messages_in);
-            // if (messages_in % 1000 == 0) printf("OUT: %llu\tIN: %llu\n", messages_out, messages_in);
+            if (messages_in % 1000 == 0) printf("OUT: %llu\tIN: %llu\n", messages_out, messages_in);
         #endif
 
         if (messages_in >= BENCHMARK_ITERATIONS) finished = 1;
@@ -126,7 +127,7 @@ int main (void) {
     printf("\tTotal messages sent: %llu\n", messages_out);
     printf("\tTotal messages received: %llu\n", messages_in);
 
-    print_result(0);
+    print_result(messages_in);
 
     MQTTAsync_disconnect(client, NULL);
     MQTTAsync_destroy(&client);

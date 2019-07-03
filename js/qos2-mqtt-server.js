@@ -1,4 +1,5 @@
 var mqtt = require('mqtt')
+var sleep = require('sleep')
 var benchmarker = require('./benchmarker')
 
 const ADDRESS   = "tcp://localhost:1883"
@@ -37,16 +38,19 @@ client.on('end', function () {
 function onMessageDelivery (err) {
     if (!err) {
         messagesOut++;
+        // console.log('Message has been published');
         if (messagesOut >= benchmarker.BENCHMARK_ITERATIONS) {
+            sleep.sleep(3);
             client.end();
         }
+    } else {
+        console.log('Error ' + err + err.toString());
     }
 };
 
 client.on('message', function (topic, message) {
     if (topic == TOPIC_IN) {
         messagesIn++;
-        // console.log('Server has received %d messages', messagesIn);
         client.publish(
             TOPIC_OUT,
             PAYLOAD,

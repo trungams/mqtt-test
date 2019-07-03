@@ -25,6 +25,22 @@ Average time is 0.000008087 seconds(s) for 100000 iterations
 Average round-trip per second: 123655 (rt/s)
 ```
 
+#### C client to Js server
+
+```
+Total time elapsed: 4.153777612 seconds
+Average time is 0.000041537 seconds(s) for 100000 iterations
+Average round-trip per second: 24074 (rt/s)
+```
+
+#### Js client to C server
+
+```
+Total time elapsed: 111.860557521 seconds
+Average time is 0.001118605 second(s) for 100000 iterations
+Average round-trip per second: 893 (rt/s)
+```
+
 #### Js client to Js server
 
 ```
@@ -75,6 +91,22 @@ Average round trips per second: 826 (rt/s)
 Total time elapsed: 4.565175539 seconds
 Average time is 0.000045651 seconds(s) for 100000 iterations
 Average round-trip per second: 21905 (rt/s)
+```
+
+#### C client to Js server
+
+```
+Total time elapsed: 29.380158689 seconds
+Average time is 0.000294042 seconds(s) for 99918 iterations
+Average round-trip per second: 3400 (rt/s)
+```
+
+#### Js client to C server
+
+```
+Total time elapsed: 109.303964627 seconds
+Average time is 0.001092679 second(s) for 100033 iterations
+Average round-trip per second: 915 (rt/s)
 ```
 
 #### Js client to Js server
