@@ -11,64 +11,98 @@ GPU: Intel UHD Graphics 620
 Memory: 6010 MiB / 15803 MiB
 ```
 
-For each model, I ran the client-server program multiple times, each time with 100,000 iterations (100,000 round-trips)
+For each model, I ran the client-server program at least once, each time with 100,000 iterations (100,000 round-trips)
 
 ## MQTT test
 
-### C client to C server model:
-    - 33.863676486
-    - 36.129232282
-    - 37.417619567
-    - 37.339931135
-    - 39.621571466
-    - 40.188722199
-    - 33.449645491
-    - 31.530099426
-    - 31.418409862
-    - 31.308995866
-Average round trips per second: 100,000 / 35.226790378 ~ 2,838 (rt/s)
+### QoS 0
 
-### C client to Js server:
-    - 188.592342917
-    - 203.759902348
-    - 218.887707756
-    - 203.947276544
-    - 247.063681056
-Average round trips per second: ~ 470 (rt/s)
+#### C client to C server
 
-### Js client to C server:
-    - 108.895439412
-    - 108.845733769
-    - 108.777132635
-    - 108.983030826
-    - 108.880994437
-Average round trips per second: ~ 918 (rt/s)
+```
+Total time elapsed: 0.808770998 seconds
+Average time is 0.000008087 seconds(s) for 100000 iterations
+Average round-trip per second: 123655 (rt/s)
+```
 
-### Js client to Js server:
-    - 120.904808283
-    - 121.231965020
-    - 121.020516876
-    - 120.687788815
-    - 121.299585964
+#### Js client to Js server
+
+```
+Total time elapsed: 124.950524490 seconds
+Average time is 0.001249505 second(s) for 100000 iterations
+Average round-trip per second: 800 (rt/s)
+```
+
+### QoS 1
+
+#### C client to C server
+
+```
+Total time elapsed: 1.771083202 seconds
+Average time is 0.000017710 seconds(s) for 100000 iterations
+Average round-trip per second: 56465 (rt/s)
+```
+
+#### C client to Js server
+
+```
+Total time elapsed: 15.469506514 seconds
+Average time is 0.000154695 seconds(s) for 100000 iterations
+Average round-trip per second: 6464 (rt/s)
+```
+
+#### Js client to C server
+
+```
+Total time elapsed: 109.199560530 seconds
+Average time is 0.001091853 second(s) for 100013 iterations
+Average round-trip per second: 915 (rt/s)
+```
+
+#### Js client to Js server
+
+Since the call to `process.hrtime()` is more expensive in Javascript, it's better to take the elapsed time between the first publication and the last message reception.
+
+```
 Average round trips per second: 826 (rt/s)
+```
 
+### QoS 2
+
+#### C client to C server
+
+```
+Total time elapsed: 4.565175539 seconds
+Average time is 0.000045651 seconds(s) for 100000 iterations
+Average round-trip per second: 21905 (rt/s)
+```
+
+#### Js client to Js server
+
+```
+Total time elapsed: 118.117489553 seconds
+Average time is 0.001181092 second(s) for 100007 iterations
+Average round-trip per second: 846 (rt/s)
+```
 
 ## TCP test (for reference)
 
-TCP_NODELAY were enabled so every message was put in a separate TCP packet
+`TCP_NODELAY` were enabled so every message was put in a separate TCP packet. Below is the result of a single test run with 100,000 round trips.
 
-    - 1.037630941
-    - 1.030040723
-    - 1.094750510
-    - 0.999576736
-    - 1.054357771
-Average round trips per second: 95,852 (rt/s)
+```
+Socket successfully created
+Total time elapsed: 0.680732861 seconds
+Average time is 0.000006807 seconds(s) for 100000 iterations
+Average round-trip per second: 146907
+```
 
 ## UDP test (for reference)
 
-    - 0.907663345
-    - 0.906056855
-    - 0.883218538
-    - 0.869614683
-    - 0.880399120
-Average round trips per second: 112,436 (rt/s)
+Below is the result of a single test run with 100,000 round trips.
+
+```
+Socket successfully created
+Total time elapsed: 0.579993131 seconds
+Average time is 0.000005799 seconds(s) for 100000 iterations
+Average round-trip per second: 172443 (rt/s)
+```

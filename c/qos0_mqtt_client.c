@@ -10,27 +10,31 @@
 #define TOPIC_OUT   "client/server"
 #define TOPIC_IN    "server/client"
 #define PAYLOAD     "hello server"
-#define QOS         1
+#define QOS0        0
+#define QOS1        1
+#define QOS2        2
 #define TIMEOUT     10000L
 
 typedef long long int ll;
 typedef unsigned long long int ull;
 
 volatile MQTTAsync_token delivered_token;
-ull messages_in = 0, messages_out = 0;
-int started = 0, finished = 0;
-
-void on_message_delivery (void *context, MQTTAsync_token dt) {
-    delivered_token = dt;
-    messages_out++;
-}
+ull messages_in = 0, messages_out = 0, successes = 0;
+int started = 0, finished = 0, can_send = 0;
 
 int on_message_arrival (void *context, char *topic_name, int topic_length, MQTTAsync_message *message) {
     if (!strcmp(topic_name, TOPIC_IN)) {
+        can_send = 1;
+
         MQTTAsync_freeMessage(&message);
         MQTTAsync_free(topic_name);
         messages_in++;
-        // if (messages_in % 1000 == 0) printf("Client has received %llu messages\n", messages_in);
+
+        #ifdef DEBUG
+            printf("OUT: %llu\tIN: %llu\n", messages_out, messages_in);
+            // if (messages_in % 1000 == 0) printf("OUT: %llu\tIN: %llu\n", messages_out, messages_in);
+        #endif
+
         if (messages_in >= BENCHMARK_ITERATIONS) finished = 1;
     }
     return 1;
@@ -57,7 +61,7 @@ void on_connect (void *context, MQTTAsync_successData *response) {
     opts.onSuccess = on_subscribe;
     opts.context = client;
 
-    if ((rc = MQTTAsync_subscribe(client, TOPIC_IN, QOS, &opts)) != MQTTASYNC_SUCCESS) {
+    if ((rc = MQTTAsync_subscribe(client, TOPIC_IN, QOS0, &opts)) != MQTTASYNC_SUCCESS) {
         printf("Failed to subscribe, return code %d\n", rc);
         exit(EXIT_FAILURE);
     }
@@ -67,20 +71,13 @@ int main (void) {
     // mqtt structs;
     MQTTAsync client;
     MQTTAsync_connectOptions connect_options = MQTTAsync_connectOptions_initializer;
-    MQTTAsync_message message = MQTTAsync_message_initializer;
     int rc;
-
-    // timespec structs for benchmarking
-    struct timespec *begin, *end, *result;
-    begin       = Benchmark_timespec_init;
-    end         = Benchmark_timespec_init;
-    result      = Benchmark_timespec_init;
 
     MQTTAsync_create(&client, ADDRESS, CLIENTID,
         MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
     MQTTAsync_setCallbacks(client, client, on_connection_lost,
-        on_message_arrival, on_message_delivery);
+        on_message_arrival, NULL);
 
     connect_options.keepAliveInterval = 20;
     connect_options.cleansession = 1;
@@ -94,30 +91,39 @@ int main (void) {
 
     while (!started);
 
-    clock_gettime(CLOCK_REALTIME, begin);
-    while (messages_in < BENCHMARK_ITERATIONS) {
+    for (messages_out = 0; messages_out < BENCHMARK_ITERATIONS; messages_out++) {
+        start_clock();
+        MQTTAsync_message message = MQTTAsync_message_initializer;
         MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
 
         message.payload = PAYLOAD;
         message.payloadlen = strlen(PAYLOAD);
-        message.qos = QOS;
+        message.qos = QOS0;
         message.retained = 0;
         delivered_token = 0;
 
         opts.context = &message;
 
         MQTTAsync_sendMessage(client, TOPIC_OUT, &message, &opts);
-        while (delivered_token == 0);
+
+        // block until receive a reply from the server or until timeout
+        while (can_send == 0);
+        for (int i = 0; i < TIMEOUT && !can_send; i++) {
+            usleep(100);
+        }
+
+        if (can_send)
+            stop_clock(), successes++;
+        usleep(1000);
     }
     while (!finished);
 
-    clock_gettime(CLOCK_REALTIME, end);
-    timespec_difference(result, begin, end);
-    print_result(result);
-
     printf("Client has finished running.\n");
-    printf("\tTotal messages sent: %llu\n", messages_out);
-    printf("\tTotal messages received: %llu\n", messages_in);
+    printf("Successes: %llu\n", successes);
+    // printf("\tTotal messages sent: %llu\n", messages_out);
+    // printf("\tTotal messages received: %llu\n", messages_in);
+
+    print_result(successes);
 
     MQTTAsync_disconnect(client, NULL);
     MQTTAsync_destroy(&client);

@@ -12,21 +12,14 @@ BIN_DIR=./bin
 
 all: mqtt tcp udp
 
-async: async_client_pub.c async_client_sub.c
-	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
-	$(CC) -o $(BIN_DIR)/async_client_pub $(CFLAGS) async_client_pub.c $(BENCHMARKER) $(LIBS)
-	$(CC) -o $(BIN_DIR)/async_client_sub $(CFLAGS) async_client_sub.c $(BENCHMARKER) $(LIBS)
-
-sync: client_sync_pub.c client_async_pub.c client_async_sub.c $(BENCHMARKER)
-	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
-	$(CC) -o $(BIN_DIR)/client_sync_pub $(CFLAGS) client_sync_pub.c $(BENCHMARKER) $(LIBS)
-	$(CC) -o $(BIN_DIR)/client_async_pub $(CFLAGS) client_async_pub.c $(BENCHMARKER) $(LIBS)
-	$(CC) -o $(BIN_DIR)/client_async_sub $(CFLAGS) client_async_sub.c $(BENCHMARKER) $(LIBS)
-
 mqtt: $(CLIENT) $(SERVER)
 	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
-	$(CC) -o $(BIN_DIR)/mqtt-client $(CFLAGS) $(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
-	$(CC) -o $(BIN_DIR)/mqtt-server $(CFLAGS) $(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos0-mqtt-client $(CFLAGS) qos0_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos0-mqtt-server $(CFLAGS) qos0_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos1-mqtt-client $(CFLAGS) qos1_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos1-mqtt-server $(CFLAGS) qos1_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos2-mqtt-client $(CFLAGS) qos2_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos2-mqtt-server $(CFLAGS) qos2_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
 
 tcp:
 	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
@@ -37,6 +30,15 @@ udp:
 	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
 	$(CC) -o $(BIN_DIR)/udp-client $(CFLAGS) udp_client.c $(BENCHMARKER) $(LIBS)
 	$(CC) -o $(BIN_DIR)/udp-server $(CFLAGS) udp_server.c $(BENCHMARKER) $(LIBS)
+
+debug:
+	if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
+	$(CC) -o $(BIN_DIR)/qos0-mqtt-client -D DEBUG $(CFLAGS) qos0_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos0-mqtt-server -D DEBUG $(CFLAGS) qos0_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos1-mqtt-client -D DEBUG $(CFLAGS) qos1_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos1-mqtt-server -D DEBUG $(CFLAGS) qos1_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos2-mqtt-client -D DEBUG $(CFLAGS) qos2_$(MQTT_CLIENT) $(BENCHMARKER) $(LIBS)
+	$(CC) -o $(BIN_DIR)/qos2-mqtt-server -D DEBUG $(CFLAGS) qos2_$(MQTT_SERVER) $(BENCHMARKER) $(LIBS)
 
 clean:
 	rm -rf $(BIN_DIR)/*

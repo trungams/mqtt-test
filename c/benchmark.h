@@ -8,7 +8,20 @@
 
 #define Benchmark_timespec_init (struct timespec*)malloc(sizeof(struct timespec))
 
+#ifdef DEBUG
+static const unsigned long long BENCHMARK_ITERATIONS = 1e3;
+#else
 static const unsigned long long BENCHMARK_ITERATIONS = 1e5;
+#endif
+static const unsigned long long NSEC_PER_SEC = 1e9;
+static const unsigned long long BILLION = 1e9;
 
-void timespec_difference (struct timespec*, struct timespec*, struct timespec*);
-void print_result (struct timespec*);
+struct timespec begin, end, result, sum;
+
+void timespec_subtract (struct timespec*, struct timespec*, struct timespec*);
+void timespec_add (struct timespec*, struct timespec*, struct timespec*);
+
+void start_clock (void);
+void stop_clock (void);
+
+void print_result (unsigned long long);

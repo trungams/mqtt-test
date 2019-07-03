@@ -6,7 +6,7 @@ const CLIENTID  = "MQTTServer"
 const TOPIC_OUT = "server/client"
 const TOPIC_IN  = "client/server"
 const PAYLOAD   = "hello client"
-const QOS       = 1
+const QOS       = 0
 const TIMEOUT   = 10000
 
 var messagesIn = 0;
@@ -21,7 +21,7 @@ var connectOptions = {
 var client = mqtt.connect(ADDRESS, connectOptions);
 
 client.on('connect', function () {
-    client.subscribe(TOPIC_IN, {qos: 1}, function (err) {
+    client.subscribe(TOPIC_IN, {qos: QOS}, function (err) {
         if (!err) {
             console.log('Server has subscribed to topic');
         }
@@ -34,15 +34,6 @@ client.on('end', function () {
     console.log('Total messages received: ' + messagesIn);
 });
 
-function onMessageDelivery (err) {
-    if (!err) {
-        messagesOut++;
-        if (messagesOut >= benchmarker.BENCHMARK_ITERATIONS) {
-            client.end();
-        }
-    }
-};
-
 client.on('message', function (topic, message) {
     if (topic == TOPIC_IN) {
         messagesIn++;
@@ -50,8 +41,11 @@ client.on('message', function (topic, message) {
         client.publish(
             TOPIC_OUT,
             PAYLOAD,
-            {qos: 1, retain: false},
-            onMessageDelivery
+            {qos: QOS, retain: false}
         );
+        if (messagesIn >= benchmarker.BENCHMARK_ITERATIONS) {
+            finished = true;
+            client.end();
+        }
     }
 });

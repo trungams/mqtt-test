@@ -6,7 +6,7 @@ const CLIENTID  = "MQTTClient"
 const TOPIC_OUT = "client/server"
 const TOPIC_IN  = "server/client"
 const PAYLOAD   = "hello server"
-const QOS       = 1
+const QOS       = 2
 const TIMEOUT   = 10000
 
 var messagesIn = 0;
@@ -22,7 +22,7 @@ var connectOptions = {
 var client = mqtt.connect(ADDRESS, connectOptions);
 
 client.on('connect', function () {
-    client.subscribe(TOPIC_IN, {qos: 1}, function (err) {
+    client.subscribe(TOPIC_IN, {qos: QOS}, function (err) {
         if (!err) {
             console.log('Client has subscribed to topic');
             started = true;
@@ -34,10 +34,11 @@ client.on('end', function () {
     console.log('Client has finished running');
     console.log('Total messages sent: ' + messagesOut);
     console.log('Total messages received: ' + messagesIn);
+    benchmarker.printResult(messagesIn);
 })
 
 client.on('message', function (topic, message, packet) {
-    if (topic == TOPIC_IN) {
+    if (messagesOut && topic == TOPIC_IN) {
         messagesIn++;
         if (messagesIn >= benchmarker.BENCHMARK_ITERATIONS) {
             finished = true;
@@ -51,7 +52,7 @@ function publishUntilFinish () {
         client.publish(
             TOPIC_OUT,
             PAYLOAD,
-            {qos: 1, retain: false},
+            {qos: QOS, retain: false},
             function (err) {
                 if (!err) {
                     messagesOut++;
@@ -61,7 +62,6 @@ function publishUntilFinish () {
         setTimeout(publishUntilFinish, 1);
     } else {
         benchmarker.stopClock();
-        benchmarker.printResult();
     }
 }
 
